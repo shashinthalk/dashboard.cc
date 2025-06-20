@@ -1,0 +1,5 @@
+Webhook Server Port: 3002
+React App Port: 3001
+
+Test with:
+curl -X POST http://localhost:3002/api/webhook/test123 -H "Content-Type: application/json" -d '{"message": "Hello!"}'

@@ -15,40 +15,58 @@ interface AuthResponse {
 }
 
 class AuthService {
-  private readonly API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
-  private readonly DEMO_EMAIL = process.env.REACT_APP_DEMO_EMAIL || 'admin@dashboard.com';
-  private readonly DEMO_PASSWORD = process.env.REACT_APP_DEMO_PASSWORD || 'admin123';
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      // For demo purposes, check against environment variables
-      if (credentials.email === this.DEMO_EMAIL && credentials.password === this.DEMO_PASSWORD) {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockUser = {
-          id: '1',
-          email: credentials.email,
-          name: 'Admin User'
-        };
-        
-        const mockToken = 'mock-jwt-token-' + Date.now();
-        
-        // Store in localStorage
-        localStorage.setItem('authToken', mockToken);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        
-        return {
-          success: true,
-          token: mockToken,
-          user: mockUser
-        };
+
+      //adminpassword
+      //cmarquardt@example.net
+
+      const response = await fetch('http://127.0.0.1:8000/api/v1/authenticate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      });
+      if (!response.ok) {
+        console.error('HTTP error:', response.status);
+      } else {
+
+        const data = await response.json();
+
+        if(data.isActive == false){
+          const authUser = {
+            id: data.id,
+            email: data.email,
+            name: data.role
+          };
+          
+          const mockToken = 'mock-jwt-token-' + Date.now();
+          
+          localStorage.setItem('authToken', mockToken);
+          localStorage.setItem('user', JSON.stringify(authUser));
+          
+          return {
+            success: true,
+            token: mockToken,
+            user: authUser
+          };
+        }else{
+          console.log("Account not activated")
+          return {
+            success: false,
+            error: 'Account not activated'
+          };
+        }
+
       }
-      
+      console.log("Invalid email or password")
       return {
         success: false,
         error: 'Invalid email or password'
       };
+
     } catch (error) {
       return {
         success: false,

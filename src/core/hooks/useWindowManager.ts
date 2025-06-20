@@ -1,4 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { 
+  WINDOW_CONFIGS, 
+  MENU_ITEMS, 
+  INITIAL_WINDOWS, 
+  getWindowContent, 
+  createWindowState,
+  getContentFilePath
+} from '../constants/windowConfig';
 
 export interface WindowState {
   id: string;
@@ -23,39 +31,44 @@ export interface MenuItem {
   icon: string;
 }
 
-const initialWindows: WindowState[] = [
-  { id: 'code-preview', title: 'Mac-Style Code Preview', isOpen: true, isMinimized: false, isMaximized: false, order: 0, source: 'main' },
-  { id: 'recent-activity', title: 'Recent Activity', isOpen: true, isMinimized: true, isMaximized: false, order: 1, source: 'main' },
-  { id: 'quick-actions', title: 'Quick Actions', isOpen: true, isMinimized: true, isMaximized: false, order: 2, source: 'main' },
-  { id: 'quick-actionsf', title: 'Quick Actions f', isOpen: true, isMinimized: true, isMaximized: false, order: 3, source: 'main' },
-];
-
-const menuItems: MenuItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { id: 'analytics', label: 'Analytics', icon: '📈' },
-  { id: 'reports', label: 'Reports', icon: '📑' },
-  { id: 'settings', label: 'Settings', icon: '⚙️' },
-  { id: 'users', label: 'Users', icon: '👥' },
-  { id: 'messages', label: 'Messages', icon: '✉️' },
-];
-
-const getWindowContent = (windowId: string): WindowContent => {
-  switch (windowId) {
-    case 'code-preview':
-      return {
-        title: 'Mac-Style Code Preview',
-        description: 'A glimpse of your code in a clean and Mac-like window. Click to explore!',
-        tags: ['TAG JS', 'TAG JS'],
-        code: '<h1> Hello World </h1>'
-      };
-    default:
-      return { title: '', description: '', tags: [], code: '' };
-  }
-};
+export interface LoadedComponent {
+  [key: string]: React.ComponentType;
+}
 
 export const useWindowManager = () => {
-  const [windows, setWindows] = useState<WindowState[]>(initialWindows);
+  const [windows, setWindows] = useState<WindowState[]>(INITIAL_WINDOWS);
   const [activeMenuItem, setActiveMenuItem] = useState('dashboard');
+  const [loadedComponents, setLoadedComponents] = useState<LoadedComponent>({});
+
+  // Load JSX content components dynamically
+  const loadContentComponent = useCallback(async (windowId: string) => {
+    const contentFile = getContentFilePath(windowId);
+    if (!contentFile || loadedComponents[windowId]) {
+      return;
+    }
+
+    try {
+      const module = await import(`../windows/${contentFile}`);
+      const Component = module.default;
+      setLoadedComponents(prev => ({
+        ...prev,
+        [windowId]: Component
+      }));
+    } catch (error) {
+      console.error(`Failed to load content component for ${windowId}:`, error);
+    }
+  }, [loadedComponents]);
+
+  // Load components for visible windows
+  useEffect(() => {
+    const visibleWindowIds = windows
+      .filter(w => w.isOpen && !w.isMinimized)
+      .map(w => w.id);
+
+    visibleWindowIds.forEach(windowId => {
+      loadContentComponent(windowId);
+    });
+  }, [windows, loadContentComponent]);
 
   const addWindowToQueue = useCallback((windowId: string, isNewWindow: boolean = false) => {
     return (prevWindows: WindowState[]): WindowState[] => {
@@ -66,15 +79,7 @@ export const useWindowManager = () => {
           isMinimized: true,
           order: window.order + 1
         }));
-        const newWindow: WindowState = {
-          id: windowId,
-          title: menuItems.find((item) => item.id === windowId)?.label || windowId,
-          isOpen: true,
-          isMinimized: false,
-          isMaximized: false,
-          order: 0,
-          source: 'menu'
-        };
+        const newWindow = createWindowState(windowId, 0);
         updatedWindows.push(newWindow);
       } else {
         updatedWindows = updatedWindows.map(window => {
@@ -133,12 +138,14 @@ export const useWindowManager = () => {
   return {
     windows,
     activeMenuItem,
-    menuItems,
+    menuItems: MENU_ITEMS,
     minimizedWindows,
     visibleWindows,
+    loadedComponents,
     handleWindowAction,
     restoreWindow,
     handleMenuClick,
     getWindowContent,
+    loadContentComponent,
   };
 }; 

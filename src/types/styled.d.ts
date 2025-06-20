@@ -42,5 +42,27 @@ declare module 'styled-components' {
         lg: string;
       };
     };
+    toolbarBg?: string;
+    btnBg?: string;
+    btnExitBg?: string;
+    btnColor?: string;
+    userColor?: string;
+    bodyBg?: string;
+    user?: string;
+    location?: string;
+    bling?: string;
+    cursor?: string;
+    terminal?: {
+      toolbarBg?: string;
+      btnBg?: string;
+      btnExitBg?: string;
+      btnColor?: string;
+      userColor?: string;
+      bodyBg?: string;
+      user?: string;
+      location?: string;
+      bling?: string;
+      cursor?: string;
+    };
   }
 } 

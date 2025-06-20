@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalStorage Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        .clear-btn {
+            background: #dc3545;
+        }
+        .clear-btn:hover {
+            background: #c82333;
+        }
+        input, textarea {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+            margin: 5px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #28a745; }
+        .error { background: #dc3545; }
+        .info { background: #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>LocalStorage Persistence Test</h1>
+    
+    <div class="test-section">
+        <h2>HTTP Request Handler Test</h2>
+        <div>
+            <label>URL:</label>
+            <input type="text" id="test-url" placeholder="https://api.example.com/endpoint">
+        </div>
+        <div>
+            <label>Method:</label>
+            <select id="test-method">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+            </select>
+        </div>
+        <div>
+            <label>Request Body:</label>
+            <textarea id="test-body" rows="4" placeholder='{"key": "value"}'></textarea>
+        </div>
+        <div>
+            <label>Response:</label>
+            <textarea id="test-response" rows="4" placeholder="Response will appear here..."></textarea>
+        </div>
+        <div>
+            <label>Status:</label>
+            <input type="number" id="test-status" placeholder="200">
+        </div>
+        <div>
+            <button onclick="saveTestData()">Save Test Data</button>
+            <button onclick="loadTestData()">Load Test Data</button>
+            <button class="clear-btn" onclick="clearTestData()">Clear Test Data</button>
+        </div>
+        <div id="test-status-message"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Webhook Test</h2>
+        <div>
+            <label>Webhook URL:</label>
+            <input type="text" id="webhook-url" placeholder="http://localhost:3002/api/webhook/abc123">
+        </div>
+        <div>
+            <label>Server Port:</label>
+            <input type="number" id="webhook-port" placeholder="3002">
+        </div>
+        <div>
+            <button onclick="saveWebhookData()">Save Webhook Data</button>
+            <button onclick="loadWebhookData()">Load Webhook Data</button>
+            <button class="clear-btn" onclick="clearWebhookData()">Clear Webhook Data</button>
+        </div>
+        <div id="webhook-status-message"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>All LocalStorage Keys</h2>
+        <button onclick="showAllKeys()">Show All Keys</button>
+        <button class="clear-btn" onclick="clearAllKeys()">Clear All Keys</button>
+        <div id="all-keys"></div>
+    </div>
+
+    <script>
+        function showMessage(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 3000);
+        }
+
+        function saveTestData() {
+            try {
+                const url = document.getElementById('test-url').value;
+                const method = document.getElementById('test-method').value;
+                const body = document.getElementById('test-body').value;
+                const response = document.getElementById('test-response').value;
+                const status = document.getElementById('test-status').value;
+
+                localStorage.setItem('http-request-url', url);
+                localStorage.setItem('http-request-method', method);
+                localStorage.setItem('http-request-body', body);
+                localStorage.setItem('http-request-response', response);
+                localStorage.setItem('http-request-status', status);
+
+                showMessage('test-status-message', 'Test data saved successfully!', 'success');
+            } catch (error) {
+                showMessage('test-status-message', `Error saving test data: ${error.message}`, 'error');
+            }
+        }
+
+        function loadTestData() {
+            try {
+                document.getElementById('test-url').value = localStorage.getItem('http-request-url') || '';
+                document.getElementById('test-method').value = localStorage.getItem('http-request-method') || 'GET';
+                document.getElementById('test-body').value = localStorage.getItem('http-request-body') || '';
+                document.getElementById('test-response').value = localStorage.getItem('http-request-response') || '';
+                document.getElementById('test-status').value = localStorage.getItem('http-request-status') || '';
+
+                showMessage('test-status-message', 'Test data loaded successfully!', 'success');
+            } catch (error) {
+                showMessage('test-status-message', `Error loading test data: ${error.message}`, 'error');
+            }
+        }
+
+        function clearTestData() {
+            try {
+                localStorage.removeItem('http-request-url');
+                localStorage.removeItem('http-request-method');
+                localStorage.removeItem('http-request-body');
+                localStorage.removeItem('http-request-response');
+                localStorage.removeItem('http-request-status');
+
+                document.getElementById('test-url').value = '';
+                document.getElementById('test-method').value = 'GET';
+                document.getElementById('test-body').value = '';
+                document.getElementById('test-response').value = '';
+                document.getElementById('test-status').value = '';
+
+                showMessage('test-status-message', 'Test data cleared successfully!', 'success');
+            } catch (error) {
+                showMessage('test-status-message', `Error clearing test data: ${error.message}`, 'error');
+            }
+        }
+
+        function saveWebhookData() {
+            try {
+                const url = document.getElementById('webhook-url').value;
+                const port = document.getElementById('webhook-port').value;
+
+                localStorage.setItem('webhook-url', url);
+                localStorage.setItem('webhook-server-port', port);
+
+                showMessage('webhook-status-message', 'Webhook data saved successfully!', 'success');
+            } catch (error) {
+                showMessage('webhook-status-message', `Error saving webhook data: ${error.message}`, 'error');
+            }
+        }
+
+        function loadWebhookData() {
+            try {
+                document.getElementById('webhook-url').value = localStorage.getItem('webhook-url') || '';
+                document.getElementById('webhook-port').value = localStorage.getItem('webhook-server-port') || '';
+
+                showMessage('webhook-status-message', 'Webhook data loaded successfully!', 'success');
+            } catch (error) {
+                showMessage('webhook-status-message', `Error loading webhook data: ${error.message}`, 'error');
+            }
+        }
+
+        function clearWebhookData() {
+            try {
+                localStorage.removeItem('webhook-url');
+                localStorage.removeItem('webhook-server-port');
+
+                document.getElementById('webhook-url').value = '';
+                document.getElementById('webhook-port').value = '';
+
+                showMessage('webhook-status-message', 'Webhook data cleared successfully!', 'success');
+            } catch (error) {
+                showMessage('webhook-status-message', `Error clearing webhook data: ${error.message}`, 'error');
+            }
+        }
+
+        function showAllKeys() {
+            try {
+                const keys = Object.keys(localStorage);
+                const keysList = keys.map(key => {
+                    const value = localStorage.getItem(key);
+                    return `<div><strong>${key}:</strong> ${value}</div>`;
+                }).join('');
+
+                document.getElementById('all-keys').innerHTML = keysList || '<div>No keys found</div>';
+            } catch (error) {
+                document.getElementById('all-keys').innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function clearAllKeys() {
+            try {
+                localStorage.clear();
+                document.getElementById('all-keys').innerHTML = '<div class="status success">All keys cleared!</div>';
+            } catch (error) {
+                document.getElementById('all-keys').innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Load data on page load
+        window.onload = function() {
+            loadTestData();
+            loadWebhookData();
+        };
+    </script>
+</body>
+</html> 

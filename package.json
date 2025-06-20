@@ -14,19 +14,27 @@
     "@types/react-dom": "^19.1.6",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.10.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
     "react-scripts": "5.0.1",
+    "socket.io": "^4.7.4",
+    "socket.io-client": "^4.7.4",
     "styled-components": "^6.1.19",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "node dev-server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "node server.js",
+    "dev": "concurrently \"npm run server\" \"react-scripts start\"",
+    "port": "cat WEBHOOK_PORT.txt 2>/dev/null || echo 'Webhook server not running. Start with: npm start'"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +57,7 @@
   "devDependencies": {
     "@types/styled-components": "^5.1.34",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17"
   }

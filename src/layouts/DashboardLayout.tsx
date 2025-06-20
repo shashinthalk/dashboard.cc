@@ -38,6 +38,7 @@ export const DashboardLayout: React.FC = () => {
     menuItems,
     minimizedWindows,
     visibleWindows,
+    loadedComponents,
     handleWindowAction,
     restoreWindow,
     handleMenuClick,
@@ -47,6 +48,22 @@ export const DashboardLayout: React.FC = () => {
   const handleLogout = async () => {
     await logout();
     setIsUserMenuOpen(false);
+  };
+
+  const renderWindowContent = (windowId: string) => {
+    const ContentComponent = loadedComponents[windowId];
+    const staticContent = getWindowContent(windowId);
+
+    if (ContentComponent) {
+      return <ContentComponent />;
+    }
+
+    // Fallback to static content
+    return (
+      <CodeEditor>
+        <pre><code>{staticContent.code}</code></pre>
+      </CodeEditor>
+    );
   };
 
   return (
@@ -105,9 +122,7 @@ export const DashboardLayout: React.FC = () => {
               {content.tags.map((tag: string, index: number) => (
                 <CardTag key={index}>{tag}</CardTag>
               ))}
-              <CodeEditor>
-                <pre><code>{content.code}</code></pre>
-              </CodeEditor>
+              {renderWindowContent(window.id)}
             </WindowCard>
           );
         })}
